@@ -1,0 +1,120 @@
+import React, {useState, useEffect, useContext} from 'react'
+import FriendForm from './FriendForm'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faUserEdit, faTrashAlt } from '@fortawesome/free-solid-svg-icons'
+import {UserContext} from '../context/UserContextProvider'
+
+export default function FriendsTable() {
+
+    const {} = useContext(UserContext)
+    
+    const [friends, setFriends] = useState([])
+    const [editing, setEditing] = useState(false)
+    const [editFriend, setEditFriend] = useState({})
+    
+    const getAllFriends = async () => {
+        const response = await fetch('/api/all_friends')
+        const data = await response.json()
+            if (response.status !== 200) {
+                throw Error (data.message)
+            }
+        setFriends(data.data)
+    }
+
+    useEffect(() => {
+        // effect to get all friends on load
+        getAllFriends()
+    }, [])
+
+    useEffect(() => {
+        console.log('friends is', friends);
+    }, [friends])
+
+    // Delete a friend (sad!)
+    const deleteFriend = async (friendId) => {
+        let response = await fetch("/api/delete_friend", {
+            method: 'POST',
+            body: JSON.stringify({
+                friend_id: friendId,
+            }),
+            headers:{          
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+                }
+        })
+        let data = await response.json()
+        if (response.status !== 200) {throw Error}
+        console.log('response data', data)
+        if (data.data === 1) { // if delete is successful, getallfriends(update data)
+            getAllFriends()
+        }   
+    }
+
+    const handleEditFriend = (theFriend) => {
+        console.log('editing!')
+        let friendEdit = {
+            id: theFriend.id,
+            name: theFriend.friend_name,
+            note: theFriend.friend_note,
+            known: theFriend.known_years
+        }
+        setEditFriend(friendEdit)
+        setEditing(true)
+    }
+
+    const clearEditFriend = () => {
+        setEditing(false)
+        setEditFriend({})
+    }
+
+
+    return(
+        <div className="column">
+        <FriendForm 
+            getAllFriends={getAllFriends}
+            editFriend={editFriend}
+            editing={editing}
+            clearEditFriend={clearEditFriend}
+        />
+        <hr/>
+        <h2>hi friends!</h2>
+        <br/>
+                <table className="table is-fullwidth is-hoverable">
+                    <thead>
+                        <tr>
+                            <td><strong>Name</strong></td>
+                            <td><strong>Note</strong></td>
+                            <td><strong>Known for</strong></td>
+                            <td><strong>Edit Info</strong></td>
+                            <td><strong>Delete</strong></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {friends.length ? friends.map(friend => {
+                            return <tr key={friend.id}>
+                                <td>{friend.friend_name}</td>
+                                <td>{friend.friend_note}</td>
+                                <td>{friend.known_years} years</td>
+                                <td><FontAwesomeIcon icon={faUserEdit}
+                                    style={{cursor: 'pointer'}} 
+                                    onClick={() => {handleEditFriend(friend)}}/></td>
+                                <td><FontAwesomeIcon icon={faTrashAlt}
+                                    style={{cursor: 'pointer'}} 
+                                    onClick={() => {deleteFriend(friend.id)}}/></td>
+                            </tr>
+                        }) : null}
+                    </tbody>
+                </table>
+                <div className="card is-hoverable">
+  <div className="card-content">
+    <p className="title">
+      “There are two hard things in computer science: cache invalidation, naming things, and off-by-one errors.”
+    </p>
+    <p className="subtitle">
+      Jeff Atwood
+    </p>
+  </div>
+</div>
+            </div>
+    )
+}
