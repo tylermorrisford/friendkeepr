@@ -1,0 +1,1 @@
+A simple 'MERN' SPA Application in development
