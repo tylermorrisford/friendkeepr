@@ -1,8 +1,12 @@
+# vars
 .env
-
 # dependencies
-*/node_modules
+node_modules
 /node_modules
+/client/node_modules
+client/node_modules
+/bcrypt/
+bcrypt/
 /.pnp
 .pnp.js
 
