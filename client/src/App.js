@@ -32,7 +32,7 @@ function App() {
   // }
 
   const friendkeepr = '<FriendKeepr />'
-  // TODO: install router, setup private routes, login page, signup page, error page
+  // TODO: setup private routes, signup page, error page
   return (
       <div className="container">
         <div className="columns mt-3">

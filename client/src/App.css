@@ -36,3 +36,8 @@
     transform: rotate(360deg);
   }
 }
+
+.mask {
+  mask-image: url('friend-mask.png');
+  mask-repeat: no-repeat;
+}

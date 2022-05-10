@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useContext} from 'react'
+import React, {useState, useEffect, useContext, useCallback} from 'react'
 import FriendForm from './FriendForm'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUserEdit, faTrashAlt } from '@fortawesome/free-solid-svg-icons'
@@ -6,29 +6,28 @@ import {UserContext} from '../context/UserContextProvider'
 
 export default function FriendsTable() {
 
-    const {} = useContext(UserContext)
+    const {userId} = useContext(UserContext)
     
     const [friends, setFriends] = useState([])
     const [editing, setEditing] = useState(false)
     const [editFriend, setEditFriend] = useState({})
     
-    const getAllFriends = async () => {
-        const response = await fetch('/api/all_friends')
-        const data = await response.json()
-            if (response.status !== 200) {
-                throw Error (data.message)
-            }
-        setFriends(data.data)
-    }
+    const getAllFriends = useCallback( async () => {
+            const response = await fetch('/api/all_friends')
+            const data = await response.json()
+                if (response.status !== 200) {
+                    throw Error (data.message)
+                }
+            setFriends(data.data)
+        }
+    ) 
+
+    // effect to get all friends on load
+    useEffect(() => { getAllFriends() }, [getAllFriends])
 
     useEffect(() => {
-        // effect to get all friends on load
-        getAllFriends()
-    }, [])
-
-    useEffect(() => {
-        console.log('friends is', friends);
-    }, [friends])
+        console.log('friends is', friends, 'User Id is ', userId);
+    }, [friends, userId])
 
     // Delete a friend (sad!)
     const deleteFriend = async (friendId) => {

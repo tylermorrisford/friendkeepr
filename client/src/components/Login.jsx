@@ -3,6 +3,7 @@ import { UserContext } from '../context/UserContextProvider'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons'
 import { Form, Icon, Button } from 'react-bulma-components';
+import { LogoMask } from './extras/LogoMask';
 
 const Login = () => {
     const {logUserIn} = useContext(UserContext)
@@ -11,8 +12,6 @@ const Login = () => {
     const [password, setPassword] = useState('')
     const [feedback, setFeedback] = useState(null)
     const [loading, setLoading] = useState(false)
-
-    const friendKeepr = '<FriendKeepr />'
 
     const handleEmail = e => {
         setEmail(e.target.value)
@@ -73,9 +72,9 @@ const Login = () => {
     }
 
     return(
-        <div className="container has-text-centered box" style={{ maxWidth: '300px' }}>
+        <div className="container has-text-centered box" style={{ maxWidth: '375px' }}>
             <h3 className="is-size-4">Sign in to</h3>
-            <h2 className="is-size-3">{friendKeepr}</h2>
+            <LogoMask />
             <br /><br />
             <form>
             <Form.Field>
