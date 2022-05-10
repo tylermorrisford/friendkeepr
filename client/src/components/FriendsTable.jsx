@@ -12,22 +12,26 @@ export default function FriendsTable() {
     const [editing, setEditing] = useState(false)
     const [editFriend, setEditFriend] = useState({})
     
-    const getAllFriends = useCallback( async () => {
-            const response = await fetch('/api/all_friends')
-            const data = await response.json()
-                if (response.status !== 200) {
-                    throw Error (data.message)
-                }
-            setFriends(data.data)
-        }
+    const getAllFriends = useCallback( () => {
+            fetch('/api/all_friends')
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log('data object', data);
+                    console.log(data.data);
+                    console.log(typeof(data.data));
+                    setFriends(data.data)
+                })
+                .catch(err => console.log('ERROR: ', err))
+            }
     ) 
 
     // effect to get all friends on load
-    useEffect(() => { getAllFriends() }, [getAllFriends])
-
     useEffect(() => {
-        console.log('friends is', friends, 'User Id is ', userId);
-    }, [friends, userId])
+        if (friends.length === 0) {getAllFriends()}
+    }, [getAllFriends])
+
+    // can remove this...
+    useEffect(() => console.log('friends:',friends, '& userId', userId), [friends])
 
     // Delete a friend (sad!)
     const deleteFriend = async (friendId) => {
@@ -89,7 +93,7 @@ export default function FriendsTable() {
                         </tr>
                     </thead>
                     <tbody>
-                        {friends.length ? friends.map(friend => {
+                        {friends.length > 0 && friends.map(friend => {
                             return <tr key={friend.id}>
                                 <td>{friend.friend_name}</td>
                                 <td>{friend.friend_note}</td>
@@ -101,7 +105,7 @@ export default function FriendsTable() {
                                     style={{cursor: 'pointer'}} 
                                     onClick={() => {deleteFriend(friend.id)}}/></td>
                             </tr>
-                        }) : null}
+                        })}
                     </tbody>
                 </table>
                 <div className="card is-hoverable">

@@ -37,15 +37,6 @@ app.post('/api/login', (req, res) => {
         let hash = result[0].user_pass;
         let user_id = result[0].user_id
         console.log('id', result[0].user_id);
-        // compare password
-        // const response = bcrypt.compare(password, hash);
-        // console.log('bcrypt res: ', response);
-        // if (response) {
-        //     res.send({
-        //         match: result, 
-        //         user: user_id
-        //     })
-        // }
         bcrypt.compare(password, hash, function(err, result) {
             if (err) throw err;
             res.send({
@@ -53,9 +44,7 @@ app.post('/api/login', (req, res) => {
                 user: user_id
             })
         });
-        
     });
-
 })
 
 // get all friends (READ)
