@@ -1,5 +1,6 @@
 const express = require('express');
 var mysql = require('mysql');
+const jwt = require('jsonwebtoken');
 var cors = require('cors')
 require('dotenv').config()
 const bcrypt = require('bcrypt');
@@ -26,6 +27,11 @@ con.connect(function(err) {
   console.log("Db is connected!");
 });
 
+
+const generateAccessToken = (username) => {
+    return jwt.sign({data: username}, process.env.TOKEN_SECRET, { expiresIn: 60 * 60 });
+  }
+
 app.post('/api/login', (req, res) => {
     console.log('user requests auth', req.body);
     let email = req.body.email
@@ -39,16 +45,35 @@ app.post('/api/login', (req, res) => {
         console.log('id', result[0].user_id);
         bcrypt.compare(password, hash, function(err, result) {
             if (err) throw err;
+            const token = generateAccessToken(email)
+            console.log('login success; token created:', token);
             res.send({
                 match: result, 
-                user: user_id
+                user: user_id,
+                token: token
             })
         });
     });
 })
 
+// auth middleware
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization']
+  const token = authHeader && authHeader.split(' ')[1]
+  console.log('token passed: ', token);
+
+  if (token == null) return res.sendStatus(401)
+
+  jwt.verify(token, process.env.TOKEN_SECRET, (err, user) => {
+    console.log(err)
+    if (err) return res.sendStatus(403)
+    req.user = user
+    next()
+  })
+}
+
 // get all friends (READ)
-app.get('/api/all_friends', (req, res) => {
+app.get('/api/all_friends', authenticateToken, (req, res) => {
     console.log('...getting friends');
     con.query("SELECT * FROM friends", function (err, result, fields) {
         if (err) throw err;
@@ -58,7 +83,7 @@ app.get('/api/all_friends', (req, res) => {
 })
 
 // add a new friend (CREATE)
-app.post('/api/add_new_friend', (req, res) => {
+app.post('/api/add_new_friend', authenticateToken, (req, res) => {
     console.log('(create)request body', req.body)
     let name = req.body.friend_name
     let note = req.body.friend_note.toString()
@@ -73,7 +98,7 @@ app.post('/api/add_new_friend', (req, res) => {
 })
 
 // (DELETE) a friend ...sad
-app.post('/api/delete_friend', (req, res) => {
+app.post('/api/delete_friend', authenticateToken, (req, res) => {
     console.log('(delete) request body', req.body)
     let id = req.body.friend_id
     let deleteQuery = `DELETE FROM friends WHERE id = ?`
@@ -84,7 +109,7 @@ app.post('/api/delete_friend', (req, res) => {
 })
 
 // (UPDATE) a friend
-app.post('/api/update_friend', (req, res) => {
+app.post('/api/update_friend', authenticateToken, (req, res) => {
     console.log('(update) request body', req.body)
     let id = req.body.id
     let name = req.body.friend_name
